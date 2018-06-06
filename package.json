@@ -1,0 +1,23 @@
+{
+  "name": "cs-token-manager",
+  "version": "0.1.0",
+  "description": "A manager for Cisco Context Service REST API access tokens",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index",
+    "test": "mocha test"
+  },
+  "keywords": [
+    "cisco",
+    "context",
+    "service",
+    "tokens"
+  ],
+  "author": "Coty Condry <ccondry@cisco.com>",
+  "license": "ISC",
+  "dependencies": {
+    "cs-utils": "file:../cs-utils",
+    "dotenv": "^6.0.0",
+    "mongodb": "^2.2.34"
+  }
+}
