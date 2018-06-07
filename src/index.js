@@ -85,7 +85,7 @@ refreshTokens()
     console.log('refresh timer is up! refreshing all tokens...')
     refreshTokens().catch(e => console.error(e))
     // }, 2 * 60 * 60 * 1000)
-  }, 2 * 60 * 60 * 1000)
+  }, process.env.REFRESH_INTERVAL * 60 * 1000)
 })
 .catch(e => console.error(e))
 
