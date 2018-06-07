@@ -66,7 +66,7 @@ async function refreshTokens () {
           await db.update('cs.orgs', {connectionData: org.connectionData}, org.orgId, 'orgId')
           console.log(`${org.email} saved refreshed token to database`)
         } catch (e) {
-          throw `${org.email} connectionData may have expired: ` + e.message
+          console.error(`${org.email} connectionData may have expired: ` + e.message)
         }
       }
       // finished iterating over database entries
