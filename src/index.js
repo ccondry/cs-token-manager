@@ -24,20 +24,14 @@ async function refreshTokens () {
             const credentials = cs.utils.getCredentials(connectionData, org.labMode)
             org.accessToken = await cs.tokens.getAccessToken(credentials, connectionData.identityBrokerUrl, true)
             org.orgId = credentials.orgId
-            console.log(`${org.email} org got new accessToken. adding to database.`)
-          }
-          catch (e) {
-            console.error('error getting new access token', e)
-          }
-          try {
+            console.log(`${org.email} with orgId ${org.orgId} got new accessToken. adding to database.`)
             // add access token to database
             await db.update('cs.orgs', {connectionData: org.connectionData}, org.accessToken, 'accessToken')
             // set orgId in database
             await db.update('cs.orgs', {connectionData: org.connectionData}, org.orgId, 'orgId')
             console.log(`${org.email} org - successfully added new accessToken to database.`)
-          }
-          catch (e) {
-            console.error('error adding new access token to the database', e)
+          } catch (e) {
+            console.error('error getting new access token', e)
           }
         }
         // have org.accessToken now
@@ -56,7 +50,7 @@ async function refreshTokens () {
           const credentials = cs.utils.getCredentials(connectionData, org.labMode)
           org.orgId = credentials.orgId
           await db.update('cs.orgs', {connectionData: org.connectionData}, org.orgId, 'orgId')
-          console.log(`${org.email} saved refreshed token to database`)
+          console.log(`${org.email} orgId ${org.orgId} saved refreshed token to database`)
         } catch (e) {
           console.error(`${org.email} connectionData may have expired: ` + e.message)
         }
