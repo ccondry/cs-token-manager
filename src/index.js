@@ -1,14 +1,6 @@
 const cs = require('cs-utils')
 const db = require('./mongodb')
 
-// const snooze = ms => new Promise(resolve => setTimeout(resolve, ms));
-//
-// const example = async () => {
-//   console.log('About to snooze without halting the event loop...');
-//   await snooze(1000);
-//   console.log('done!');
-// };
-
 // check database for accessToken and refreshToken
 async function refreshTokens () {
   try {
