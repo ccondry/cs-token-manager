@@ -52,7 +52,7 @@ function upsert (collection, query, data) {
               console.log('queryError', queryError)
               return reject(queryError)
             } else {
-              console.log('doc', doc)
+              // console.log('doc', doc)
               return resolve(doc)
             }
           }
