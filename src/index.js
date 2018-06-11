@@ -178,7 +178,8 @@ async function processOrg (org) {
           // this means we need to renew the machine account
           // remove the old machine bearer, and re-run this function
           delete org.machineBearer
-          processOrg(org)
+          await processOrg(org)
+          return
         } else {
           // move on to next item in the iteration
           return
