@@ -14,6 +14,11 @@ refreshTokens()
 })
 .catch(e => console.error(e))
 
+// format expiresIn seconds into days
+function getExpiryDays (accessToken) {
+  return (accessToken.refresh_token_expires_in / (60 * 60 * 24)).toFixed(2)
+}
+
 // check database for accessToken and refreshToken
 async function refreshTokens () {
   let orgs
@@ -58,25 +63,27 @@ async function refreshTokens () {
       org.clientSecret = credentials.clientSecret
       console.error(`${org.username} orgId ${org.id} is now configured for getting access tokens.`)
     }
+
+    // check for admin access token
+    if (!org.adminAccessToken) {
+      try {
+        // get an admin access token
+        org.adminAccessToken = await cs.org.getAdminAccessToken({
+          username: org.username,
+          password: org.password,
+          orgId: org.id,
+          clientId: org.clientId,
+          clientSecret: org.clientSecret,
+        })
+      } catch (e) {
+        console.error('failed to get admin access token', e.message)
+        continue
+      }
+    }
+
     // check for access token
     if (!org.accessToken) {
       console.log(`${org.username} orgId ${org.id} does not have an access token. getting new one.`)
-      if (!org.adminBearer) {
-        try {
-          const adminAccesstoken = await cs.org.getAdminAccessToken({
-            username: org.username,
-            password: org.password,
-            orgId: org.id,
-            clientId: org.clientId,
-            clientSecret: org.clientSecret,
-          })
-          console.log('adminAccesstoken', adminAccesstoken)
-          org.adminBearer = adminAccesstoken.access_token
-        } catch (e) {
-          console.error('failed to get admin access token', e.message)
-          continue
-        }
-      }
       if (!org.machineBearer) {
         // has no access token and no machine bearer token
         console.log(`${org.username} orgId ${org.id} does not have a machine bearer token. getting new one.`)
@@ -90,7 +97,7 @@ async function refreshTokens () {
             // create machine account with new name and password
             const machineAccount = await cs.machineAccount.create({
               orgId: org.id,
-              bearer: org.adminBearer,
+              bearer: org.adminAccessToken.access_token,
               name: org.machineAccountName,
               password: org.machineAccountPassword
             })
@@ -105,7 +112,7 @@ async function refreshTokens () {
           try {
             await cs.machineAccount.authorizeToCs({
               orgId: org.id,
-              bearer: org.adminBearer,
+              bearer: org.adminAccessToken.access_token,
               machineAccountId: org.machineAccountId
             })
           } catch (e) {
@@ -149,17 +156,34 @@ async function refreshTokens () {
 
     // refresh the accessToken
     try {
-      console.log(`${org.username} with orgId ${org.id} refreshing token...`)
+      console.log(`${org.username} with orgId ${org.id} refreshing machine access token...`)
+      // refresh machine access token
       org.accessToken = await cs.machineAccount.refreshAccessToken({
         clientId: org.clientId,
         clientSecret: org.clientSecret,
         refreshToken: org.accessToken.refresh_token
       })
       // get expiry days with 2 decimal places
-      const expiryDays = (org.accessToken.refresh_token_expires_in / (60 * 60 * 24)).toFixed(2)
-      console.log(`${org.username} with orgId ${org.id} token refreshed. Refresh token ${org.accessToken.refresh_token} expires in ${expiryDays} days.`)
+      console.log(`${org.username} with orgId ${org.id} machine access token refreshed. Refresh token ${org.accessToken.refresh_token} expires in ${getExpiryDays(org.accessToken)} days.`)
     } catch (e) {
-      console.log(`${org.username} with orgId ${org.id} token refresh failed.`, e.message)
+      console.log(`${org.username} with orgId ${org.id} machine access token refresh failed.`, e.message)
+      // move on to next item in the iteration
+      continue
+    }
+
+    // refresh the adminAccessToken
+    try {
+      console.log(`${org.username} with orgId ${org.id} refreshing admin access token...`)
+      // refresh admin access token
+      org.adminAccessToken = await cs.machineAccount.refreshAccessToken({
+        clientId: org.clientId,
+        clientSecret: org.clientSecret,
+        refreshToken: org.adminAccessToken.refresh_token
+      })
+      // get expiry days with 2 decimal places
+      console.log(`${org.username} with orgId ${org.id} admin access token refreshed. Refresh token ${org.adminAccessToken.refresh_token} expires in ${getExpiryDays(org.adminAccessToken)} days.`)
+    } catch (e) {
+      console.log(`${org.username} with orgId ${org.id} admin access token refresh failed.`, e.message)
       // move on to next item in the iteration
       continue
     }
