@@ -1,6 +1,6 @@
 {
   "name": "cs-token-manager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A manager for Cisco Context Service REST API access tokens",
   "main": "src/index.js",
   "scripts": {
