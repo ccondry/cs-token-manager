@@ -70,6 +70,7 @@ async function refreshTokens () {
             clientId: org.clientId,
             clientSecret: org.clientSecret,
           })
+          console.log('adminAccesstoken', adminAccesstoken)
           org.adminBearer = adminAccesstoken.access_token
         } catch (e) {
           console.error('failed to get admin access token', e.message)
