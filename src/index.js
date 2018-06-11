@@ -174,7 +174,7 @@ async function processOrg (org) {
       } catch (e) {
         console.error(`${org.username} with orgId ${org.id} error getting new machine account access token`, e.message)
         // check if it was a 400 error of invalid grant
-        if (e.statusCode === 400 && e.body.error === 'invalid_grant') {
+        if (e.statusCode === 400) {
           // this means we need to renew the machine account
           // remove the old machine bearer, and re-run this function
           delete org.machineBearer
