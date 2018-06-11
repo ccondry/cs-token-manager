@@ -62,14 +62,19 @@ async function refreshTokens () {
     if (!org.accessToken) {
       console.log(`${org.username} orgId ${org.id} does not have an access token. getting new one.`)
       if (!org.adminBearer) {
-        const adminAccesstoken = cs.org.getAdminAccessToken({
-          username: org.username,
-          password: org.password,
-          orgId: org.id,
-          clientId: org.clientId,
-          clientSecret: org.clientSecret,
-        })
-        org.adminBearer = adminAccesstoken.access_token
+        try {
+          const adminAccesstoken = await cs.org.getAdminAccessToken({
+            username: org.username,
+            password: org.password,
+            orgId: org.id,
+            clientId: org.clientId,
+            clientSecret: org.clientSecret,
+          })
+          org.adminBearer = adminAccesstoken.access_token
+        } catch (e) {
+          console.error('failed to get admin access token', e.message)
+          continue
+        }
       }
       if (!org.machineBearer) {
         // has no access token and no machine bearer token
