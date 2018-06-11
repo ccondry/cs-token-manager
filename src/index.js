@@ -50,9 +50,9 @@ async function refreshTokens () {
         }
         // decode connection data
         console.error(`${org.username} decoding connection data string...`)
-        org.connectionData = lib.utils.decodeConnectionData(org.connectionDataString)
+        org.connectionData = cs.utils.decodeConnectionData(org.connectionDataString)
       }
-      const credentials = lib.utils.getCredentials(org.connectionData, org.labMode)
+      const credentials = cs.utils.getCredentials(org.connectionData, org.labMode)
       org.id = credentials.orgId
       org.clientId = credentials.clientId
       org.clientSecret = credentials.clientSecret
@@ -62,7 +62,7 @@ async function refreshTokens () {
     if (!org.accessToken) {
       console.log(`${org.username} orgId ${org.id} does not have an access token. getting new one.`)
       if (!org.adminBearer) {
-        const adminAccesstoken = lib.org.getAdminAccessToken({
+        const adminAccesstoken = cs.org.getAdminAccessToken({
           username: org.username,
           password: org.password,
           orgId: org.id,
