@@ -4,7 +4,7 @@ const db = require('./mongodb')
 // main loop - start off by refreshing tokens
 refreshTokens()
 .then(rsp => {
-  // set up 5-minute interval to refresh tokens again
+  // set up interval to periodically refresh access tokens
   setInterval(function() {
     console.log('refresh timer is up! refreshing all tokens...')
     // refresh tokens again
