@@ -38,11 +38,36 @@ async function refreshTokens () {
   console.log(`${orgs.length} orgs configured`)
   // iterate over the orgs
   for (let org of orgs) {
+    try {
+      await processOrg(org)
+      await updateDatabase(org)
+    } catch (error) {
+      // error finding orgs
+      throw error
+    }
+  }
+  // finished for-loop over orgs
+}
+
+async function updateDatabase (org) {
+  // update org in database
+  try {
+    console.log(`${org.username} with orgId ${org.id} - updating info in database...`)
+    await db.upsert('cs.orgs', {_id: org._id}, org)
+    console.log(`${org.username} with orgId ${org.id} info was updated in database.`)
+  } catch (e) {
+    console.error(`${org.username} with orgId ${org.id} info failed to be updated in database`, e.message)
+    // move on to next item in the iteration
+    return
+  }
+}
+
+async function processOrg (org) {
     // validate that this db entry has been configured with org details that we need
     if (!org.username || !org.password) {
       console.error(`org is not configured correctly. Please configure a username and password for database ID ${org._id}`)
       // move on to next item in the iteration
-      continue
+      return
     }
     if (!org.id || !org.clientId || !org.clientSecret) {
       // need clientId and clientSecret - see if we have connectionData
@@ -51,7 +76,7 @@ async function refreshTokens () {
         if (!org.connectionDataString) {
           console.error(`${org.username} is not configured correctly. Please configure a connectionDataString for database ID ${org._id}`)
           // move on to next item in the iteration
-          continue
+          return
         }
         // decode connection data
         console.error(`${org.username} decoding connection data string...`)
@@ -77,7 +102,7 @@ async function refreshTokens () {
         })
       } catch (e) {
         console.error('failed to get admin access token', e.message)
-        continue
+        return
       }
     }
 
@@ -107,7 +132,7 @@ async function refreshTokens () {
           } catch (e) {
             console.error(`${org.username} orgId ${org.id} - failed to create machine account ${org.machineAccountName}`, e.message)
             // move on to next item in the iteration
-            continue
+            return
           }
           try {
             await cs.machineAccount.authorizeToCs({
@@ -118,7 +143,7 @@ async function refreshTokens () {
           } catch (e) {
             console.error(`${org.username} orgId ${org.id} machine account id ${org.machineAccountId} failed to authorize for Context Service.`, e.message)
             // move on to next item in the iteration
-            continue
+            return
           }
         }
         console.log(`${org.username} orgId ${org.id} machine account authorized for Context Service. getting bearer token...`)
@@ -133,7 +158,7 @@ async function refreshTokens () {
         } catch (e) {
           console.error(`${org.username} orgId ${org.id} failed get new machine bearer token:`, e.message)
           // move on to next item in the iteration
-          continue
+          return
         }
       }
       try {
@@ -147,9 +172,17 @@ async function refreshTokens () {
         })
         console.log(`${org.username} with orgId ${org.id} got new machine account access token.`)
       } catch (e) {
-        console.error(`${org.username} with orgId ${org.id} error getting new machine account access token`, e)
-        // move on to next item in the iteration
-        continue
+        console.error(`${org.username} with orgId ${org.id} error getting new machine account access token`, e.message)
+        // check if it was a 400 error of invalid grant
+        if (e.statusCode === 400 && e.body.error === 'invalid_grant') {
+          // this means we need to renew the machine account
+          // remove the old machine bearer, and re-run this function
+          delete org.machineBearer
+          processOrg(org)
+        } else {
+          // move on to next item in the iteration
+          return
+        }
       }
     }
     // have org.accessToken now
@@ -168,7 +201,7 @@ async function refreshTokens () {
     } catch (e) {
       console.log(`${org.username} with orgId ${org.id} machine access token refresh failed.`, e.message)
       // move on to next item in the iteration
-      continue
+      return
     }
 
     // refresh the adminAccessToken
@@ -185,20 +218,7 @@ async function refreshTokens () {
     } catch (e) {
       console.log(`${org.username} with orgId ${org.id} admin access token refresh failed.`, e.message)
       // move on to next item in the iteration
-      continue
-    }
-
-    // update org in database
-    try {
-      console.log(`${org.username} with orgId ${org.id} - updating info in database...`)
-      await db.upsert('cs.orgs', {_id: org._id}, org)
-      console.log(`${org.username} with orgId ${org.id} info was updated in database.`)
-    } catch (e) {
-      console.error(`${org.username} with orgId ${org.id} info failed to be updated in database`, e)
-      // move on to next item in the iteration
-      continue
+      return
     }
     // end of the for-loop for this org
-  }
-  // finished for-loop over orgs
 }
