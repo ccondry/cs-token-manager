@@ -43,7 +43,7 @@ async function refreshTokens () {
       await updateDatabase(org)
     } catch (error) {
       // error finding orgs
-      throw error
+      continue
     }
   }
   // finished for-loop over orgs
