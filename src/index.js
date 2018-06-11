@@ -166,7 +166,7 @@ async function refreshTokens () {
     // update org in database
     try {
       console.log(`${org.username} with orgId ${org.id} - updating info in database...`)
-      await db.upsert('cs.orgs', {orgId: org.id}, org)
+      await db.upsert('cs.orgs', {id: org.id}, org)
       console.log(`${org.username} with orgId ${org.id} info was updated in database.`)
     } catch (e) {
       console.error(`${org.username} with orgId ${org.id} info failed to be updated in database`, e)
