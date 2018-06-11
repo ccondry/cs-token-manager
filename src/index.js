@@ -33,8 +33,6 @@ async function refreshTokens () {
   console.log(`${orgs.length} orgs configured`)
   // iterate over the orgs
   for (let org of orgs) {
-    // remove internal db ID
-    delete org.id 
     // validate that this db entry has been configured with org details that we need
     if (!org.username || !org.password) {
       console.error(`org is not configured correctly. Please configure a username and password for database ID ${org._id}`)
@@ -168,7 +166,7 @@ async function refreshTokens () {
     // update org in database
     try {
       console.log(`${org.username} with orgId ${org.id} - updating info in database...`)
-      await db.upsert('cs.orgs', {id: org.id}, org)
+      await db.upsert('cs.orgs', {_id: org._id}, org)
       console.log(`${org.username} with orgId ${org.id} info was updated in database.`)
     } catch (e) {
       console.error(`${org.username} with orgId ${org.id} info failed to be updated in database`, e)
