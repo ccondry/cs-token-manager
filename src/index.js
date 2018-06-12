@@ -40,7 +40,7 @@ async function refreshTokens () {
   // finished for-loop over orgs
 }
 
-function getOrgs () {
+async function getOrgs () {
   try {
     // find all orgs
     const orgs = await db.find('cs.orgs')
