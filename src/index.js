@@ -23,19 +23,10 @@ function getExpiryDays (accessToken) {
 async function refreshTokens () {
   let orgs
   try {
-    // find all orgs
-    orgs = await db.find('cs.orgs')
-  } catch (error) {
-    // error finding orgs
-    throw error
+    orgs = await getOrgs()
+  } catch (e) {
+    throw e
   }
-  // validate that we found some orgs
-  if (!orgs || orgs === null || orgs.length === 0) {
-    // console.log(data)
-    throw 'No orgs configured in the database. Please configure at least 1 org with connectionData.'
-  }
-  // found orgs
-  console.log(`${orgs.length} orgs configured`)
   // iterate over the orgs
   for (let org of orgs) {
     try {
@@ -47,6 +38,24 @@ async function refreshTokens () {
     }
   }
   // finished for-loop over orgs
+}
+
+function getOrgs () {
+  try {
+    // find all orgs
+    const orgs = await db.find('cs.orgs')
+    // found orgs
+    console.log(`${orgs.length} orgs configured`)
+    return orgs
+  } catch (error) {
+    // error finding orgs
+    throw error
+  }
+  // validate that we found some orgs
+  if (!orgs || orgs === null || orgs.length === 0) {
+    // console.log(data)
+    throw 'No orgs configured in the database. Please configure at least 1 org with connectionData.'
+  }
 }
 
 async function updateDatabase (org) {
