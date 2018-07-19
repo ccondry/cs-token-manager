@@ -1,0 +1,1 @@
+*/1 * * * * /bin/sh -c 'cd /opt/dcloud/cs-token-manager && ./update.sh' 2>&1 | /usr/bin/logger -t cron-update-cs-token-manager

@@ -1,0 +1,2 @@
+# Allow 'administrator' user to restart cs-token-manager service
+administrator ALL=NOPASSWD: /bin/systemctl restart cs-token-manager.service
